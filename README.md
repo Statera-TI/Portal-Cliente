@@ -34,12 +34,28 @@ Invoke-WebRequest $url -OutFile "$env:TEMP\Portal-do-Cliente-StateraTI-Setup.exe
 
 Compare o resultado com o arquivo `.sha256` da release.
 
-## Pelo VSA X
+## Pelo VSA X (roda como SYSTEM)
 
-Rode o `instalar-portal.ps1` no contexto do **usuário logado**. Códigos de saída:
+O portal é instalado no perfil do usuário, então não pode ser instalado direto como
+SYSTEM. Use o `vsax-instalar-portal.ps1`: ele cria uma tarefa agendada temporária
+para cada usuário com sessão aberta, roda o `instalar-portal.ps1` como esse usuário,
+mostra o log e remove a tarefa.
+
+Script do VSA X (PowerShell, executando como SYSTEM):
+
+```powershell
+$f = "$env:TEMP\vsax-instalar-portal.ps1"
+Invoke-WebRequest 'https://raw.githubusercontent.com/Statera-TI/Portal-Cliente/main/vsax-instalar-portal.ps1' -OutFile $f -UseBasicParsing
+& $f
+exit $LASTEXITCODE
+```
 
 | Código | Significado |
 |---|---|
-| 0 | Instalado e versão conferida |
-| 1 | Falha no download, no hash, no instalador ou na conferência da versão |
-| 2 | Executado como SYSTEM |
+| 0 | Instalado para todos os usuários logados |
+| 1 | Falha em pelo menos um usuário (o log aparece na saída) |
+| 3 | Nenhum usuário logado; rodar de novo quando houver alguém na máquina |
+| 4 | Não está rodando como SYSTEM/administrador |
+
+O `instalar-portal.ps1` sozinho, rodando como o próprio usuário, devolve 0 (ok),
+1 (falha) ou 2 (executado como SYSTEM).
