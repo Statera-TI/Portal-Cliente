@@ -29,7 +29,10 @@ Para uma versão específica ou abrir o portal ao final:
 ```powershell
 $url = 'https://github.com/Statera-TI/Portal-Cliente/releases/latest/download/Portal-do-Cliente-StateraTI-Setup-win-x64.exe'
 Invoke-WebRequest $url -OutFile "$env:TEMP\Portal-do-Cliente-StateraTI-Setup.exe" -UseBasicParsing
+(Get-FileHash "$env:TEMP\Portal-do-Cliente-StateraTI-Setup.exe" -Algorithm SHA256).Hash
 ```
+
+Compare o resultado com o arquivo `.sha256` da release.
 
 ## Pelo VSA X
 

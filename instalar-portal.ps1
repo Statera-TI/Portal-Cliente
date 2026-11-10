@@ -73,7 +73,10 @@ try {
     Write-Step "Baixando $($exeAsset.name)..."
     Invoke-WebRequest -Uri $exeAsset.browser_download_url -OutFile $installerPath -UseBasicParsing
 
-    $expectedHash = ((Invoke-WebRequest -Uri $hashAsset.browser_download_url -UseBasicParsing).Content -split '\s+')[0].Trim().ToUpperInvariant()
+    # O GitHub entrega anexos como application/octet-stream; o conteudo pode vir em bytes.
+    $hashContent = (Invoke-WebRequest -Uri $hashAsset.browser_download_url -UseBasicParsing).Content
+    if ($hashContent -is [byte[]]) { $hashContent = [Text.Encoding]::ASCII.GetString($hashContent) }
+    $expectedHash = ($hashContent.Trim() -split '\s+')[0].ToUpperInvariant()
     $hash = (Get-FileHash -LiteralPath $installerPath -Algorithm SHA256).Hash
     if ($hash -ne $expectedHash) {
         Remove-Item -LiteralPath $installerPath -Force
